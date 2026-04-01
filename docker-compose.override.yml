@@ -1,0 +1,40 @@
+services:
+  backend:
+    build:
+      context: ./server
+      target: builder
+    command: npx nodemon -L --watch src --ext ts --exec "npm run start"
+    volumes:
+      - ./server:/app           
+      - /app/node_modules       
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: train_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 5000
+      CORS_URLS: http://localhost:3000,http://localhost:80
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./client
+      target: builder
+    command: npm start
+    ports:
+      - "3000:3000"             
+    volumes:
+      - ./client:/app          
+      - /app/node_modules      
+    environment:
+      NODE_ENV: dev
+      REACT_APP_API_URL: http://localhost:5000
+
+      CHOKIDAR_USEPOLLING: "true" 
+      WATCHPACK_POLLING: "true"
+      WDS_SOCKET_PORT: 0
