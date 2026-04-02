@@ -12,7 +12,6 @@ import {
   ArrayMinSize,
   ValidatorConstraint,
   ValidatorConstraintInterface,
-  ValidationArguments,
   Validate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -23,11 +22,13 @@ import { TrainType } from '../entities/train.entity';
 class IsUniqueStationsConstraint implements ValidatorConstraintInterface {
   validate(routeItems: any[]) {
     if (!Array.isArray(routeItems)) return true;
-    const stationIds = routeItems.map((item) => item.stationId);
+    const stationIds = routeItems.map(
+      (item: NestedRoutePointDto) => item.stationId,
+    );
     return new Set(stationIds).size === stationIds.length;
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage() {
     return 'A train route cannot contain duplicate stations';
   }
 }

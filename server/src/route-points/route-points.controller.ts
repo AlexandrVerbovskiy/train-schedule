@@ -3,6 +3,7 @@ import { RoutePointsService } from './route-points.service';
 import { AuthGuard } from '@nestjs/passport';
 import { SearchTrainPaginationDto } from '../trains/dto/search-train-pagination.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { RequestWithUser } from '../common/interfaces';
 
 @ApiTags('Route Points')
 @ApiBearerAuth()
@@ -13,7 +14,10 @@ export class RoutePointsController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get schedule (all route points with filters)' })
-  find(@Query() searchDto: SearchTrainPaginationDto, @Req() req) {
+  find(
+    @Query() searchDto: SearchTrainPaginationDto,
+    @Req() req: RequestWithUser,
+  ) {
     return this.routePointsService.find(searchDto, req.user.id);
   }
 }

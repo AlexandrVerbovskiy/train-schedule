@@ -2,10 +2,9 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
-  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { Train } from './entities/train.entity';
 import { CreateTrainDto } from './dto/create-train.dto';
 import { UpdateTrainDto } from './dto/update-train.dto';
@@ -13,6 +12,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { RoutePoint } from '../route-points/entities/route-point.entity';
 import { TrainsCacheService } from '../common/cache/trains-cache.service';
 import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
+import { PaginatedResponse } from '../common/interfaces';
 
 @Injectable()
 export class TrainsService {
@@ -37,27 +37,24 @@ export class TrainsService {
 
     await this.checkTrainNumberUniqueness(trainData.trainNumber);
 
-    const train = this.trainRepository.create({
+    const trainPartial: DeepPartial<Train> = {
       ...trainData,
       routeItems: routeItems?.map((item) => ({
         ...item,
         station: { id: item.stationId },
       })),
-    });
+    };
 
+    const train = this.trainRepository.create(trainPartial);
     const saved = await this.trainRepository.save(train);
     await this.clearRelatedCache();
     return saved;
   }
 
-  async find(
-    paginationDto: PaginationDto,
-  ): Promise<{ data: Train[]; count: number }> {
+  async find(paginationDto: PaginationDto): Promise<PaginatedResponse<Train>> {
     const cacheKey = JSON.stringify(paginationDto);
-    const cached = await this.trainsCacheService.get<{
-      data: Train[];
-      count: number;
-    }>(cacheKey);
+    const cached =
+      await this.trainsCacheService.get<PaginatedResponse<Train>>(cacheKey);
 
     if (cached) {
       return cached;
@@ -101,14 +98,17 @@ export class TrainsService {
 
     if (routeItems) {
       await this.routePointRepository.delete({ train: { id } });
+      const trainId = id;
 
-      train.routeItems = routeItems.map(
-        (item) =>
-          ({
-            ...item,
-            station: { id: item.stationId },
-          }) as any,
+      const newRouteItems: DeepPartial<RoutePoint>[] = routeItems.map(
+        (item) => ({
+          ...item,
+          station: { id: item.stationId },
+          train: { id: trainId },
+        }),
       );
+
+      train.routeItems = this.routePointRepository.create(newRouteItems);
     }
 
     Object.assign(train, trainData);

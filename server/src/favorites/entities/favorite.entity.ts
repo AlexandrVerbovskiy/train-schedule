@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Unique, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  Unique,
+  Column,
+} from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { RoutePoint } from '../../route-points/entities/route-point.entity';
 import { ApiProperty } from '@nestjs/swagger';

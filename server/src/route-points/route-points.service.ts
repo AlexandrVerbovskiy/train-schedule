@@ -4,6 +4,8 @@ import { Repository, Brackets } from 'typeorm';
 import { RoutePoint } from './entities/route-point.entity';
 import { SearchTrainPaginationDto } from '../trains/dto/search-train-pagination.dto';
 import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
+import { PaginatedResponse } from '../common/interfaces';
+import { UserScheduleItem } from './types';
 
 @Injectable()
 export class RoutePointsService {
@@ -16,8 +18,11 @@ export class RoutePointsService {
   async find(
     searchDto: SearchTrainPaginationDto,
     userId: number,
-  ): Promise<{ data: any[]; count: number }> {
-    const cached = await this.scheduleCacheService.getUserScheduleList(searchDto, userId);
+  ): Promise<PaginatedResponse<UserScheduleItem>> {
+    const cached = await this.scheduleCacheService.getUserScheduleList(
+      searchDto,
+      userId,
+    );
 
     if (cached) {
       return cached;
@@ -75,13 +80,17 @@ export class RoutePointsService {
     const count = await query.getCount();
     const data = await query.getRawAndEntities();
 
-    const mapped = data.entities.map((entity, index) => ({
+    const mapped: UserScheduleItem[] = data.entities.map((entity, index) => ({
       ...entity,
-      isFavorite: !!data.raw[index].fav_id,
+      isFavorite: !!(data.raw[index] as { fav_id: string | null }).fav_id,
     }));
 
     const result = { data: mapped, count };
-    await this.scheduleCacheService.setUserScheduleList(searchDto, userId, result);
+    await this.scheduleCacheService.setUserScheduleList(
+      searchDto,
+      userId,
+      result,
+    );
     return result;
   }
 }

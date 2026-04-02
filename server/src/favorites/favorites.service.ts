@@ -15,10 +15,17 @@ export class FavoritesService {
     private readonly scheduleCacheService: ScheduleCacheService,
   ) {}
 
-  async toggle(userId: number, routePointId: string): Promise<{ isFavorite: boolean }> {
-    const isRoutePointExists = await this.routePointsRepository.findOne({ where: { id: routePointId } });
+  async toggle(
+    userId: number,
+    routePointId: string,
+  ): Promise<{ isFavorite: boolean }> {
+    const isRoutePointExists = await this.routePointsRepository.findOne({
+      where: { id: routePointId },
+    });
     if (!isRoutePointExists) {
-      throw new NotFoundException(`Route point with ID "${routePointId}" not found`);
+      throw new NotFoundException(
+        `Route point with ID "${routePointId}" not found`,
+      );
     }
 
     const existing = await this.favoritesRepository.findOne({
@@ -27,7 +34,7 @@ export class FavoritesService {
 
     if (existing) {
       await this.favoritesRepository.remove(existing);
-    }else{
+    } else {
       const fav = this.favoritesRepository.create({ userId, routePointId });
       await this.favoritesRepository.save(fav);
     }

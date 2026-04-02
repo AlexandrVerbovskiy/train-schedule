@@ -12,6 +12,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { StationsCacheService } from '../common/cache/stations-cache.service';
 import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
 import { TrainsCacheService } from '../common/cache/trains-cache.service';
+import { PaginatedResponse } from '../common/interfaces';
 
 @Injectable()
 export class StationsService {
@@ -68,12 +69,10 @@ export class StationsService {
 
   async find(
     paginationDto: PaginationDto,
-  ): Promise<{ data: Station[]; count: number }> {
+  ): Promise<PaginatedResponse<Station>> {
     const cacheKey = JSON.stringify(paginationDto);
-    const cached = await this.cacheService.get<{
-      data: Station[];
-      count: number;
-    }>(cacheKey);
+    const cached =
+      await this.cacheService.get<PaginatedResponse<Station>>(cacheKey);
 
     if (cached) {
       return cached;
