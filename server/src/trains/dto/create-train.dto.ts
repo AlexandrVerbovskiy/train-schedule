@@ -9,10 +9,28 @@ import {
   IsInt,
   Min,
   Max,
+  ArrayMinSize,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+  Validate,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { TrainType } from '../entities/train.entity';
+
+@ValidatorConstraint({ name: 'isUniqueStations', async: false })
+class IsUniqueStationsConstraint implements ValidatorConstraintInterface {
+  validate(routeItems: any[]) {
+    if (!Array.isArray(routeItems)) return true;
+    const stationIds = routeItems.map((item) => item.stationId);
+    return new Set(stationIds).size === stationIds.length;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'A train route cannot contain duplicate stations';
+  }
+}
 
 class NestedRoutePointDto {
   @ApiProperty({
@@ -99,6 +117,8 @@ export class CreateTrainDto {
   })
   @IsArray()
   @IsOptional()
+  @ArrayMinSize(2, { message: 'A train route must have at least 2 stops' })
+  @Validate(IsUniqueStationsConstraint)
   @ValidateNested({ each: true })
   @Type(() => NestedRoutePointDto)
   routeItems?: NestedRoutePointDto[];

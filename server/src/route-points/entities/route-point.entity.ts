@@ -9,7 +9,7 @@ import { Train } from '../../trains/entities/train.entity';
 import { Station } from '../../stations/entities/station.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
-@Entity('route_item')
+@Entity('route_points')
 export class RoutePoint {
   @ApiProperty({ example: 'uuid-456' })
   @PrimaryGeneratedColumn('uuid')

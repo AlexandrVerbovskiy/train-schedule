@@ -5,31 +5,34 @@ const Button = ({ children, className = "", ...props }) => {
   return (
     <button
       {...props}
-      className={`w-full py-4 font-bold rounded-2xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95 tracking-tight text-sm ${className}`}
+      className={clsx(
+        "px-6 flex items-center justify-center gap-2 rounded-2xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none",
+        className
+      )}
     >
       {children}
     </button>
   );
 };
 
-const PrimaryButton = ({ children, className = "", ...props }) => (
+const GhostButton = ({ children, className = "", ...props }) => (
   <Button
     {...props}
     className={clsx(
-      "bg-blue-600 hover:bg-blue-500 text-white shadow-[0_10px_20px_rgba(37,99,235,0.3)]",
-      className,
+      "h-14 bg-slate-900/40 text-white border border-white/10 hover:bg-slate-800 transition-all px-8",
+      className
     )}
   >
     {children}
   </Button>
 );
 
-const GhostButton = ({ children, className = "", ...props }) => (
+const ActionButton = ({ children, className = "", ...props }) => (
   <Button
     {...props}
     className={clsx(
-      "bg-white/10 hover:bg-white/20 text-white border border-white/10",
-      className,
+      "h-14 bg-blue-600/20 text-blue-400 border border-blue-500/40 hover:bg-blue-600/30",
+      className
     )}
   >
     {children}
@@ -40,12 +43,12 @@ const DangerButton = ({ children, className = "", ...props }) => (
   <Button
     {...props}
     className={clsx(
-      "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30",
-      className,
+      "h-14 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 px-8",
+      className
     )}
   >
     {children}
   </Button>
 );
 
-export { PrimaryButton, GhostButton, DangerButton };
+export { GhostButton, DangerButton, ActionButton };

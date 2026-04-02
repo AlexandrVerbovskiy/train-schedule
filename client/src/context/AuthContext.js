@@ -38,7 +38,6 @@ export const AuthProvider = ({ children }) => {
     if (data && !data.error && data.access_token) {
       localStorage.setItem('token', data.access_token);
       setUser(data.user);
-      return data;
     }
 
     return data;
@@ -50,7 +49,6 @@ export const AuthProvider = ({ children }) => {
     if (data && !data.error && data.access_token) {
       localStorage.setItem('token', data.access_token);
       setUser(data.user);
-      return data;
     }
 
     return data;

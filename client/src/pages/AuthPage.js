@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import * as authApi from "../api/auth";
 import Input from "../components/Common/Input";
-import { PrimaryButton } from "../components/Common/Button";
+import { ActionButton } from "../components/Common/Button";
 import { useAuth } from "../context/AuthContext";
 
 const AuthPage = () => {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
@@ -24,47 +23,54 @@ const AuthPage = () => {
 
     try {
       const data = isLogin
-        ? await authApi.login(email, password)
-        : await authApi.register(email, password);
+        ? await login(email, password)
+        : await register(email, password);
 
       if (data.error || (data.message && data.statusCode >= 400)) {
         throw new Error(data.message || "Something went wrong");
       }
-
-      login(data.user, data.access_token);
     } catch (err) {
       setError(err.message);
     }
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 max-w-md w-full border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-      <div className="text-center space-y-2">
-        <h1 className="text-4xl font-black text-white tracking-widest italic">
-          Train Schedule
-        </h1>
-        <p className="text-slate-500 font-bold text-[10px] tracking-tight">
+    <div className="bg-slate-950/50 backdrop-blur-2xl rounded-4xl border border-white/5 p-8 max-w-md w-full shadow-3xl">
+      <div className="text-center space-y-2 mb-8">
+        <h1 className="text-4xl font-bold text-white">Train Schedule</h1>
+        <p className="text-slate-500 font-bold text-xs">
           {isLogin ? "Authorization Required" : "New Account Registration"}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Input
-          label="Email Address"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@example.com"
-          required
-        />
-        <Input
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="********"
-          required
-        />
+        <div className="space-y-1">
+          <label className="text-sm font-bold text-slate-500 pl-2">
+            Email Address
+          </label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@example.com"
+            className="h-12 bg-white/5 rounded-xl border border-white/5 text-sm"
+            required
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-bold text-slate-500 pl-2">
+            Password
+          </label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="********"
+            className="h-12 bg-white/5 rounded-xl border border-white/5 text-sm"
+            required
+          />
+        </div>
 
         {error && (
           <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm text-center font-bold">
@@ -72,15 +78,16 @@ const AuthPage = () => {
           </div>
         )}
 
-        <PrimaryButton type="submit">
-          {isLogin ? "Sign In" : "Create Account"}
-        </PrimaryButton>
+        <ActionButton className="w-full h-14" style={{ marginTop: "1.5rem" }} type="submit">
+          {isLogin ? "Sign In" : "Sign Up"}
+        </ActionButton>
       </form>
 
-      <div className="mt-8 text-center">
+      <div className="mt-6 text-center">
         <button
+          type="button"
           onClick={toggleAuthMode}
-          className="text-slate-400 hover:text-white text-sm font-bold transition-colors underline-offset-4 hover:underline decoration-blue-500"
+          className="text-slate-400 hover:text-white text-xs font-bold decoration-blue-500 transition-all duration-150 ease-in-out"
         >
           {isLogin
             ? "Don't have an account? Sign Up"

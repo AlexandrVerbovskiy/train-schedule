@@ -1,4 +1,4 @@
-import apiClient from './client';
+import apiClient from '../utils/client';
 
 export const login = (email, password) => 
   apiClient('/auth/login', { body: { email, password } });

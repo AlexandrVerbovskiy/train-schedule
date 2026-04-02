@@ -32,14 +32,14 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
       return data;
     }
 
-    if (response.status === 401) {
+    if (token && response.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/auth';
     }
 
-    return { error: true, message: data.message || 'Something went wrong' };
+    return { error: true, statusCode: response.status, message: data.message || 'Something went wrong' };
   } catch (err) {
-    return { error: true, message: err.message || 'Network error' };
+    return { error: true, statusCode: 500, message: err.message || 'Network error' };
   }
 };
 

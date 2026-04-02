@@ -3,20 +3,19 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './context/AuthContext';
 import AuthPage from './pages/AuthPage';
 import SchedulePage from './pages/SchedulePage';
-import ProfileView from './components/Auth/ProfileView';
-import AdminLayout from './components/Admin/AdminLayout';
-import TrainManager from './components/Admin/TrainManager';
-import StationManager from './components/Admin/StationManager';
+import TrainManager from './pages/Admin/TrainManager';
+import StationManager from './pages/Admin/StationManager';
+import MainLayout from './components/Common/MainLayout';
 import ProtectedRoute from './components/Common/ProtectedRoute';
 import './App.css';
 
 function App() {
-  const { user, logout, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-blue-500 animate-pulse font-black text-xl tracking-widest">
+        <div className="text-blue-500 animate-pulse font-bold text-xl">
           Loading...
         </div>
       </div>
@@ -25,32 +24,33 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center p-4 font-sans text-slate-100 overflow-x-hidden">
-        
-        {/* 🏔️ Header/Nav (Optional, but let's keep it simple for now) */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center p-4 font-sans text-slate-100 overflow-x-hidden justify-center transition-all duration-500">
         <Routes>
-          <Route path="/" element={<SchedulePage />} />
-          <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/profile" />} />
+          <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/" />} />
 
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <div className="pt-20">
-                 <ProfileView user={user} onLogout={logout} />
-              </div>
-            </ProtectedRoute>
-          } />
-
-          <Route 
-            path="/admin" 
-            element={
+          <Route element={user ? <MainLayout /> : <Navigate to="/auth" />}>
+            <Route path="/" element={<SchedulePage />} />
+            
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute roles={['admin']}>
+                  <Navigate to="/admin/trains" replace />
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route path="/admin/trains" element={
               <ProtectedRoute roles={['admin']}>
-                <AdminLayout />
+                <TrainManager />
               </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="trains" replace />} />
-            <Route path="trains" element={<TrainManager />} />
-            <Route path="stations" element={<StationManager />} />
+            } />
+            
+            <Route path="/admin/stations" element={
+              <ProtectedRoute roles={['admin']}>
+                <StationManager />
+              </ProtectedRoute>
+            } />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />

@@ -20,7 +20,7 @@ import { RolesGuard } from './guards/roles.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GuestGuard],
+  providers: [AuthService, JwtStrategy, GuestGuard, RolesGuard],
   exports: [AuthService, RolesGuard],
 })
 export class AuthModule {}
