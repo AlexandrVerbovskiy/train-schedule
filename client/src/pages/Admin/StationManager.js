@@ -6,6 +6,7 @@ import CustomTable from "../../components/Common/CustomTable";
 import StationRow from "../../components/Admin/Stations/StationRow";
 import StationCreateModal from "../../components/Admin/Stations/StationCreateModal";
 import StationHeaderActions from "../../components/Admin/Stations/StationHeaderActions";
+import socketService from "../../services/socketService";
 
 const StationManager = () => {
   const [stations, setStations] = useState([]);
@@ -36,6 +37,15 @@ const StationManager = () => {
 
   useEffect(() => {
     fetchStations();
+  }, [fetchStations]);
+
+  useEffect(() => {
+    socketService.connect();
+    socketService.on("STATIONS_UPDATED", fetchStations);
+
+    return () => {
+      socketService.off("STATIONS_UPDATED", fetchStations);
+    };
   }, [fetchStations]);
 
   const handleEdit = (station) => {

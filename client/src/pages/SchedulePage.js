@@ -4,6 +4,7 @@ import CustomTable from "../components/Common/CustomTable";
 import ScheduleRow from "../components/Schedule/ScheduleRow";
 import ScheduleFilters from "../components/Schedule/ScheduleFilters";
 import * as favoritesApi from "../api/favorites";
+import socketService from "../services/socketService";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -47,6 +48,17 @@ const SchedulePage = () => {
     }, 300);
 
     return () => clearTimeout(timer);
+  }, [fetchSchedule]);
+
+  useEffect(() => {
+    socketService.connect();
+    socketService.on("TRAINS_UPDATED", fetchSchedule);
+    socketService.on("STATIONS_UPDATED", fetchSchedule);
+
+    return () => {
+      socketService.off("TRAINS_UPDATED", fetchSchedule);
+      socketService.off("STATIONS_UPDATED", fetchSchedule);
+    };
   }, [fetchSchedule]);
 
   const handleToggleFavorite = async (routePointId) => {

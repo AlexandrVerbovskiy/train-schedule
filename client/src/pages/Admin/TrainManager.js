@@ -7,6 +7,7 @@ import TrainRow from "../../components/Admin/Trains/TrainRow";
 import TrainCreateModal from "../../components/Admin/Trains/TrainCreateModal";
 import TrainHeaderActions from "../../components/Admin/Trains/TrainHeaderActions";
 import CustomTable from "../../components/Common/CustomTable";
+import socketService from "../../services/socketService";
 
 const TrainManager = () => {
   const [trains, setTrains] = useState([]);
@@ -37,6 +38,17 @@ const TrainManager = () => {
 
   useEffect(() => {
     fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    socketService.connect();
+    socketService.on("TRAINS_UPDATED", fetchData);
+    socketService.on("STATIONS_UPDATED", fetchData);
+
+    return () => {
+      socketService.off("TRAINS_UPDATED", fetchData);
+      socketService.off("STATIONS_UPDATED", fetchData);
+    };
   }, [fetchData]);
 
   const handleSubmit = async (formData, id) => {
