@@ -13,13 +13,16 @@ export class RoutePointsService {
 
   async find(
     searchDto: SearchTrainPaginationDto,
-  ): Promise<{ data: RoutePoint[]; count: number }> {
-    const { page, limit, search, type, hour, minute } = searchDto;
+    userId?: number,
+  ): Promise<{ data: any[]; count: number }> {
+    const { page, limit, search, type, hour, minute, showOnlyFavorites } = searchDto;
 
     const query = this.routePointRepository
       .createQueryBuilder('rp')
       .leftJoinAndSelect('rp.train', 'train')
       .leftJoinAndSelect('rp.station', 'station')
+      .leftJoin('favorites', 'fav', 'fav.routePointId = rp.id AND fav.userId = :userId', { userId: userId || 0 })
+      .addSelect('fav.id', 'fav_id')
       .orderBy('rp.departureHour', 'ASC')
       .addOrderBy('rp.departureMinute', 'ASC');
 
@@ -49,9 +52,20 @@ export class RoutePointsService {
       }
     }
 
+    if (showOnlyFavorites && userId) {
+      query.andWhere('fav.id IS NOT NULL');
+    }
+
     query.skip((page - 1) * limit).take(limit);
 
-    const [data, count] = await query.getManyAndCount();
-    return { data, count };
+    const count = await query.getCount();
+    const data = await query.getRawAndEntities();
+    
+    const mapped = data.entities.map((entity, index) => ({
+      ...entity,
+      isFavorite: !!data.raw[index].fav_id,
+    }));
+
+    return { data: mapped, count };
   }
 }

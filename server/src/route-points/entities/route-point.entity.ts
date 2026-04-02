@@ -46,4 +46,11 @@ export class RoutePoint {
   @ApiProperty({ example: 1, description: 'Order of the stop in the route' })
   @Column({ name: 'order', type: 'int', default: 1 })
   order: number;
+
+  @ApiProperty({
+    description: 'Whether the current user has favorited this route point',
+    required: false,
+    example: true,
+  })
+  isFavorite?: boolean;
 }

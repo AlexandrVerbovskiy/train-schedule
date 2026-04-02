@@ -13,6 +13,9 @@ import { Train } from './trains/entities/train.entity';
 import { Station } from './stations/entities/station.entity';
 import { RoutePoint } from './route-points/entities/route-point.entity';
 
+import { FavoritesModule } from './favorites/favorites.module';
+import { Favorite } from './favorites/entities/favorite.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,7 +28,7 @@ import { RoutePoint } from './route-points/entities/route-point.entity';
       username: process.env.DB_USER!,
       password: process.env.DB_PASSWORD!,
       database: process.env.DB_NAME!,
-      entities: [User, Train, Station, RoutePoint],
+      entities: [User, Train, Station, RoutePoint, Favorite],
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV === 'dev' || true,
     }),
@@ -34,6 +37,7 @@ import { RoutePoint } from './route-points/entities/route-point.entity';
     TrainsModule,
     StationsModule,
     RoutePointsModule,
+    FavoritesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

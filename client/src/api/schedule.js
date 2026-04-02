@@ -2,7 +2,7 @@ import apiClient from '../utils/client';
 
 export const getSchedule = (
   page = 1,
-  { limit = 10, search = "", type = "", hour = "", minute = "" } = {},
+  { limit = 10, search = "", type = "", hour = "", minute = "", showOnlyFavorites = false } = {},
 ) => {
   let link = `/route-points?page=${page}&limit=${limit}`;
 
@@ -20,6 +20,10 @@ export const getSchedule = (
 
   if (minute) {
     link += `&minute=${minute}`;
+  }
+
+  if (showOnlyFavorites) {
+    link += `&showOnlyFavorites=${showOnlyFavorites}`;
   }
 
   return apiClient(link);

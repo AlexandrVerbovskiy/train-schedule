@@ -3,11 +3,13 @@ import * as scheduleApi from "../api/schedule";
 import CustomTable from "../components/Common/CustomTable";
 import ScheduleRow from "../components/Schedule/ScheduleRow";
 import ScheduleFilters from "../components/Schedule/ScheduleFilters";
+import * as favoritesApi from "../api/favorites";
 
 const ITEMS_PER_PAGE = 10;
 
 const SchedulePage = () => {
-  const [trains, setTrains] = useState([]);
+  const [routePoints, setRoutePoints] = useState([]);
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [targetType, setTargetType] = useState("");
@@ -25,21 +27,40 @@ const SchedulePage = () => {
         type: targetType,
         hour,
         minute,
+        showOnlyFavorites,
       });
-      setTrains(data || []);
+      setRoutePoints(data || []);
       setTotal(count || 0);
     } catch (err) {
       console.error("Failed to load schedule");
     }
     setLoading(false);
-  }, [page, search, targetType, targetTime]);
+  }, [page, search, targetType, targetTime, showOnlyFavorites]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, targetType, targetTime, showOnlyFavorites]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchSchedule();
     }, 300);
+
     return () => clearTimeout(timer);
   }, [fetchSchedule]);
+
+  const handleToggleFavorite = async (routePointId) => {
+    if (!routePointId) return;
+    try {
+      const { isFavorite } = await favoritesApi.toggleFavorite(routePointId);
+
+      setRoutePoints((prev) =>
+        prev.map((t) => (t.id === routePointId ? { ...t, isFavorite } : t)),
+      );
+    } catch (err) {
+      console.error("Failed to toggle favorite", err);
+    }
+  };
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
@@ -50,22 +71,28 @@ const SchedulePage = () => {
         headerActions={
           <ScheduleFilters
             search={search}
-            onSearchChange={(val) => { setSearch(val); setPage(1); }}
+            onSearchChange={setSearch}
             targetType={targetType}
-            onTypeChange={(val) => { setTargetType(val); setPage(1); }}
+            onTypeChange={setTargetType}
             targetTime={targetTime}
-            onTimeChange={(val) => { setTargetTime(val); setPage(1); }}
+            onTimeChange={setTargetTime}
+            showOnlyFavorites={showOnlyFavorites}
+            onFavoritesToggle={setShowOnlyFavorites}
           />
         }
         headers={["Num", "Type", "Station", "Arrival", "Departure", "Service"]}
-        items={trains}
-        emptyText="No trains found"
+        items={routePoints}
+        emptyText={showOnlyFavorites ? "No favorites yet" : "No route points found"}
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}
         loading={loading}
         renderRow={(routePoint) => (
-          <ScheduleRow key={routePoint.id} routePoint={routePoint} />
+          <ScheduleRow
+            key={routePoint.id}
+            routePoint={routePoint}
+            onToggleFavorite={handleToggleFavorite}
+          />
         )}
       />
     </div>

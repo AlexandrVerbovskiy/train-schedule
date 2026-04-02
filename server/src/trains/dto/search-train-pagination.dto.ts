@@ -1,5 +1,5 @@
-import { IsOptional, IsEnum, IsInt, Min, Max } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsEnum, IsInt, Min, Max, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { TrainType } from '../entities/train.entity';
@@ -37,4 +37,13 @@ export class SearchTrainPaginationDto extends PaginationDto {
   @Min(0)
   @Max(59)
   minute?: number;
+
+  @ApiProperty({
+    description: 'Show only favorite routes',
+    required: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  showOnlyFavorites?: boolean;
 }

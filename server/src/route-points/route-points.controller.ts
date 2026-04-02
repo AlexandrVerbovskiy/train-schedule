@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, Req } from '@nestjs/common';
 import { RoutePointsService } from './route-points.service';
 import { AuthGuard } from '@nestjs/passport';
 import { SearchTrainPaginationDto } from '../trains/dto/search-train-pagination.dto';
@@ -13,7 +13,7 @@ export class RoutePointsController {
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Get schedule (all route points with filters)' })
-  find(@Query() searchDto: SearchTrainPaginationDto) {
-    return this.routePointsService.find(searchDto);
+  find(@Query() searchDto: SearchTrainPaginationDto, @Req() req) {
+    return this.routePointsService.find(searchDto, req.user.id);
   }
 }
