@@ -1,20 +1,39 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { User } from './users/entities/user.entity';
+import { AuthModule } from './auth/auth.module';
+import { DatabaseModule } from './database/database.module';
+import { TrainsModule } from './trains/trains.module';
+import { StationsModule } from './stations/stations.module';
+import { RoutePointsModule } from './route-points/route-points.module';
+import { Train } from './trains/entities/train.entity';
+import { Station } from './stations/entities/station.entity';
+import { RoutePoint } from './route-points/entities/route-point.entity';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      host: process.env.DB_HOST!,
+      port: Number(process.env.DB_PORT!),
+      username: process.env.DB_USER!,
+      password: process.env.DB_PASSWORD!,
+      database: process.env.DB_NAME!,
+      entities: [User, Train, Station, RoutePoint],
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV === 'dev',
+      synchronize: process.env.NODE_ENV === 'dev' || true,
     }),
+    AuthModule,
+    DatabaseModule,
+    TrainsModule,
+    StationsModule,
+    RoutePointsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

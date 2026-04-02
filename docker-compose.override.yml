@@ -7,8 +7,9 @@ services:
     volumes:
       - ./server:/app           
       - /app/node_modules       
+    env_file:
+      - ./server/.env
     environment:
-      NODE_ENV: development
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: user
@@ -31,8 +32,9 @@ services:
     volumes:
       - ./client:/app          
       - /app/node_modules      
+    env_file:
+      - ./client/.env
     environment:
-      NODE_ENV: dev
       REACT_APP_API_URL: http://localhost:5000
 
       CHOKIDAR_USEPOLLING: "true" 

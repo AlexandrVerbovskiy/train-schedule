@@ -1,20 +1,62 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import AuthPage from './pages/AuthPage';
+import SchedulePage from './pages/SchedulePage';
+import ProfileView from './components/Auth/ProfileView';
+import AdminLayout from './components/Admin/AdminLayout';
+import TrainManager from './components/Admin/TrainManager';
+import StationManager from './components/Admin/StationManager';
+import ProtectedRoute from './components/Common/ProtectedRoute';
 import './App.css';
 
 function App() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 max-w-md w-full border border-white/10 shadow-2xl">
-        <h1 className="text-3xl font-extrabold text-white mb-4 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-          Train Schedule
-        </h1>
-        
-        <div className="space-y-4">
-          <button className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-600/20 active:scale-[0.98]">
-            Search Trains
-          </button>
+  const { user, logout, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-blue-500 animate-pulse font-black text-xl tracking-widest">
+          Loading...
         </div>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <Router>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-indigo-950 flex flex-col items-center p-4 font-sans text-slate-100 overflow-x-hidden">
+        
+        {/* 🏔️ Header/Nav (Optional, but let's keep it simple for now) */}
+        <Routes>
+          <Route path="/" element={<SchedulePage />} />
+          <Route path="/auth" element={!user ? <AuthPage /> : <Navigate to="/profile" />} />
+
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <div className="pt-20">
+                 <ProfileView user={user} onLogout={logout} />
+              </div>
+            </ProtectedRoute>
+          } />
+
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="trains" replace />} />
+            <Route path="trains" element={<TrainManager />} />
+            <Route path="stations" element={<StationManager />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

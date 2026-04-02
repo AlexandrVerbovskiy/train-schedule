@@ -25,9 +25,10 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     restart: always
+    env_file:
+      - ./server/.env
     environment:
       PORT: 8080
-      NODE_ENV: prod
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: user
@@ -49,6 +50,8 @@ services:
       dockerfile: Dockerfile
     container_name: frontend
     restart: always
+    env_file:
+      - ./client/.env
     environment:
       REACT_APP_API_URL: http://localhost:8080
     ports:
