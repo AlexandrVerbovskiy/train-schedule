@@ -15,11 +15,13 @@ import { RoutePoint } from './route-points/entities/route-point.entity';
 
 import { FavoritesModule } from './favorites/favorites.module';
 import { Favorite } from './favorites/entities/favorite.entity';
-import { AppCacheModule } from './common/cache.module';
+import { EventsModule } from './events/events.module';
+import { AppCacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
     AppCacheModule,
+    EventsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

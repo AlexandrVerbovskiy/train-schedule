@@ -9,10 +9,11 @@ import { Station } from './entities/station.entity';
 import { CreateStationDto } from './dto/create-station.dto';
 import { UpdateStationDto } from './dto/update-station.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
-import { StationsCacheService } from '../common/cache/stations-cache.service';
-import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
-import { TrainsCacheService } from '../common/cache/trains-cache.service';
+import { StationsCacheService } from '../cache/stations-cache.service';
+import { ScheduleCacheService } from '../cache/schedule-cache.service';
+import { TrainsCacheService } from '../cache/trains-cache.service';
 import { PaginatedResponse } from '../common/interfaces';
+import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
 export class StationsService {
@@ -22,6 +23,7 @@ export class StationsService {
     private readonly scheduleCacheService: ScheduleCacheService,
     private readonly cacheService: StationsCacheService,
     private readonly trainsCacheService: TrainsCacheService,
+    private readonly eventsGateway: EventsGateway,
   ) {}
 
   async clearRelatedCache(): Promise<void> {
@@ -30,6 +32,7 @@ export class StationsService {
       this.trainsCacheService.clearAll(),
       this.cacheService.clearAll(),
     ]);
+    this.eventsGateway.emitDataUpdate('STATIONS_UPDATED');
   }
 
   private async validateNameUniqueness(

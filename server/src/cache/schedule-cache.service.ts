@@ -3,8 +3,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { BaseCacheService } from './base-cache.service';
 import { SearchTrainPaginationDto } from 'src/trains/dto/search-train-pagination.dto';
-import { PaginatedResponse } from '../interfaces';
-import { UserScheduleItem } from '../../route-points/types';
+import { PaginatedResponse } from '../common/interfaces';
+import { UserScheduleItem } from '../route-points/types';
 
 @Injectable()
 export class ScheduleCacheService extends BaseCacheService {

@@ -10,9 +10,10 @@ import { CreateTrainDto } from './dto/create-train.dto';
 import { UpdateTrainDto } from './dto/update-train.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { RoutePoint } from '../route-points/entities/route-point.entity';
-import { TrainsCacheService } from '../common/cache/trains-cache.service';
-import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
+import { TrainsCacheService } from '../cache/trains-cache.service';
+import { ScheduleCacheService } from '../cache/schedule-cache.service';
 import { PaginatedResponse } from '../common/interfaces';
+import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
 export class TrainsService {
@@ -23,6 +24,7 @@ export class TrainsService {
     private routePointRepository: Repository<RoutePoint>,
     private readonly scheduleCacheService: ScheduleCacheService,
     private readonly trainsCacheService: TrainsCacheService,
+    private readonly eventsGateway: EventsGateway,
   ) {}
 
   async clearRelatedCache(): Promise<void> {
@@ -30,6 +32,7 @@ export class TrainsService {
       this.scheduleCacheService.clearAll(),
       this.trainsCacheService.clearAll(),
     ]);
+    this.eventsGateway.emitDataUpdate('TRAINS_UPDATED');
   }
 
   async create(createTrainDto: CreateTrainDto): Promise<Train> {

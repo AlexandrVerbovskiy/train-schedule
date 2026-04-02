@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Favorite } from './entities/favorite.entity';
 import { RoutePoint } from '../route-points/entities/route-point.entity';
-import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
+import { ScheduleCacheService } from '../cache/schedule-cache.service';
 
 @Injectable()
 export class FavoritesService {

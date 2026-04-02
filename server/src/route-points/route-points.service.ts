@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Brackets } from 'typeorm';
 import { RoutePoint } from './entities/route-point.entity';
 import { SearchTrainPaginationDto } from '../trains/dto/search-train-pagination.dto';
-import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
+import { ScheduleCacheService } from '../cache/schedule-cache.service';
 import { PaginatedResponse } from '../common/interfaces';
 import { UserScheduleItem } from './types';
 
