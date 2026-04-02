@@ -15,9 +15,11 @@ import { RoutePoint } from './route-points/entities/route-point.entity';
 
 import { FavoritesModule } from './favorites/favorites.module';
 import { Favorite } from './favorites/entities/favorite.entity';
+import { AppCacheModule } from './common/cache.module';
 
 @Module({
   imports: [
+    AppCacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

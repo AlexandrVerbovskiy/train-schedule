@@ -40,13 +40,6 @@ export class TrainsController {
     return this.trainsService.find(searchDto);
   }
 
-  @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Get train details by ID' })
-  findOne(@Param('id') id: string) {
-    return this.trainsService.findOne(id);
-  }
-
   @Put(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)

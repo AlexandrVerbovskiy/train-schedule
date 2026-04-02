@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Favorite } from './entities/favorite.entity';
 import { RoutePoint } from '../route-points/entities/route-point.entity';
+import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
 
 @Injectable()
 export class FavoritesService {
@@ -11,6 +12,7 @@ export class FavoritesService {
     private favoritesRepository: Repository<Favorite>,
     @InjectRepository(RoutePoint)
     private routePointsRepository: Repository<RoutePoint>,
+    private readonly scheduleCacheService: ScheduleCacheService,
   ) {}
 
   async toggle(userId: number, routePointId: string): Promise<{ isFavorite: boolean }> {
@@ -25,11 +27,12 @@ export class FavoritesService {
 
     if (existing) {
       await this.favoritesRepository.remove(existing);
-      return { isFavorite: false };
+    }else{
+      const fav = this.favoritesRepository.create({ userId, routePointId });
+      await this.favoritesRepository.save(fav);
     }
 
-    const fav = this.favoritesRepository.create({ userId, routePointId });
-    await this.favoritesRepository.save(fav);
-    return { isFavorite: true };
+    await this.scheduleCacheService.clearUserScheduleList(userId);
+    return { isFavorite: !existing };
   }
 }

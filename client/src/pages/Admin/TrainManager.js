@@ -72,7 +72,7 @@ const TrainManager = () => {
 
       setIsModalOpen(false);
       setEditingTrain(null);
-      fetchData();
+      await fetchData();
     } catch (err) {
       setError(err.message);
     }

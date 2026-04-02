@@ -47,14 +47,6 @@ export class StationsController {
     return this.stationsService.findAll();
   }
 
-  @Get(':id')
-  @Roles(UserRole.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @ApiOperation({ summary: 'Get station details' })
-  findOne(@Param('id') id: string) {
-    return this.stationsService.findOne(id);
-  }
-
   @Put(':id')
   @Roles(UserRole.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -3,25 +3,39 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Brackets } from 'typeorm';
 import { RoutePoint } from './entities/route-point.entity';
 import { SearchTrainPaginationDto } from '../trains/dto/search-train-pagination.dto';
+import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
 
 @Injectable()
 export class RoutePointsService {
   constructor(
     @InjectRepository(RoutePoint)
     private readonly routePointRepository: Repository<RoutePoint>,
+    private readonly scheduleCacheService: ScheduleCacheService,
   ) {}
 
   async find(
     searchDto: SearchTrainPaginationDto,
-    userId?: number,
+    userId: number,
   ): Promise<{ data: any[]; count: number }> {
-    const { page, limit, search, type, hour, minute, showOnlyFavorites } = searchDto;
+    const cached = await this.scheduleCacheService.getUserScheduleList(searchDto, userId);
+
+    if (cached) {
+      return cached;
+    }
+
+    const { page, limit, search, type, hour, minute, showOnlyFavorites } =
+      searchDto;
 
     const query = this.routePointRepository
       .createQueryBuilder('rp')
       .leftJoinAndSelect('rp.train', 'train')
       .leftJoinAndSelect('rp.station', 'station')
-      .leftJoin('favorites', 'fav', 'fav.routePointId = rp.id AND fav.userId = :userId', { userId: userId || 0 })
+      .leftJoin(
+        'favorites',
+        'fav',
+        'fav.routePointId = rp.id AND fav.userId = :userId',
+        { userId: userId || 0 },
+      )
       .addSelect('fav.id', 'fav_id')
       .orderBy('rp.departureHour', 'ASC')
       .addOrderBy('rp.departureMinute', 'ASC');
@@ -60,12 +74,14 @@ export class RoutePointsService {
 
     const count = await query.getCount();
     const data = await query.getRawAndEntities();
-    
+
     const mapped = data.entities.map((entity, index) => ({
       ...entity,
       isFavorite: !!data.raw[index].fav_id,
     }));
 
-    return { data: mapped, count };
+    const result = { data: mapped, count };
+    await this.scheduleCacheService.setUserScheduleList(searchDto, userId, result);
+    return result;
   }
 }

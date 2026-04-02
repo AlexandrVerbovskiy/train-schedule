@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  Inject,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Train } from './entities/train.entity';
@@ -6,6 +11,8 @@ import { CreateTrainDto } from './dto/create-train.dto';
 import { UpdateTrainDto } from './dto/update-train.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { RoutePoint } from '../route-points/entities/route-point.entity';
+import { TrainsCacheService } from '../common/cache/trains-cache.service';
+import { ScheduleCacheService } from '../common/cache/schedule-cache.service';
 
 @Injectable()
 export class TrainsService {
@@ -14,7 +21,16 @@ export class TrainsService {
     private trainRepository: Repository<Train>,
     @InjectRepository(RoutePoint)
     private routePointRepository: Repository<RoutePoint>,
+    private readonly scheduleCacheService: ScheduleCacheService,
+    private readonly trainsCacheService: TrainsCacheService,
   ) {}
+
+  async clearRelatedCache(): Promise<void> {
+    await Promise.all([
+      this.scheduleCacheService.clearAll(),
+      this.trainsCacheService.clearAll(),
+    ]);
+  }
 
   async create(createTrainDto: CreateTrainDto): Promise<Train> {
     const { routeItems, ...trainData } = createTrainDto;
@@ -29,12 +45,24 @@ export class TrainsService {
       })),
     });
 
-    return this.trainRepository.save(train);
+    const saved = await this.trainRepository.save(train);
+    await this.clearRelatedCache();
+    return saved;
   }
 
   async find(
     paginationDto: PaginationDto,
   ): Promise<{ data: Train[]; count: number }> {
+    const cacheKey = JSON.stringify(paginationDto);
+    const cached = await this.trainsCacheService.get<{
+      data: Train[];
+      count: number;
+    }>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const { page, limit, search } = paginationDto;
 
     const query = this.trainRepository
@@ -53,10 +81,12 @@ export class TrainsService {
     }
 
     const [data, count] = await query.getManyAndCount();
-    return { data, count };
+    const result = { data, count };
+    await this.trainsCacheService.set(cacheKey, result);
+    return result;
   }
 
-  async findOne(id: string): Promise<Train> {
+  async update(id: string, updateTrainDto: UpdateTrainDto): Promise<Train> {
     const train = await this.trainRepository.findOne({
       where: { id },
       relations: ['routeItems', 'routeItems.station'],
@@ -66,28 +96,25 @@ export class TrainsService {
       throw new NotFoundException(`Train with ID "${id}" not found`);
     }
 
-    return train;
-  }
-
-  async update(id: string, updateTrainDto: UpdateTrainDto): Promise<Train> {
-    const train = await this.findOne(id);
     const { routeItems, ...trainData } = updateTrainDto;
-
-    if (trainData.trainNumber) {
-      await this.checkTrainNumberUniqueness(trainData.trainNumber, id);
-    }
+    await this.checkTrainNumberUniqueness(trainData.trainNumber!, id);
 
     if (routeItems) {
       await this.routePointRepository.delete({ train: { id } });
-      
-      train.routeItems = routeItems.map((item) => ({
-        ...item,
-        station: { id: item.stationId },
-      } as any));
+
+      train.routeItems = routeItems.map(
+        (item) =>
+          ({
+            ...item,
+            station: { id: item.stationId },
+          }) as any,
+      );
     }
 
     Object.assign(train, trainData);
-    return this.trainRepository.save(train);
+    const updated = await this.trainRepository.save(train);
+    await this.clearRelatedCache();
+    return updated;
   }
 
   private async checkTrainNumberUniqueness(
@@ -110,5 +137,6 @@ export class TrainsService {
     if (result.affected === 0) {
       throw new NotFoundException(`Train with ID "${id}" not found`);
     }
+    await this.clearRelatedCache();
   }
 }
