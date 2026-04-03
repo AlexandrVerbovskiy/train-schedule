@@ -4,12 +4,15 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Train } from './train.entity';
 import { Station } from '../../stations/entities/station.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('route_points')
+@Index(['departureHour', 'departureMinute'])
+@Index(['arrivalHour', 'arrivalMinute'])
 export class RoutePoint {
   @ApiProperty({ example: 'uuid-456' })
   @PrimaryGeneratedColumn('uuid')

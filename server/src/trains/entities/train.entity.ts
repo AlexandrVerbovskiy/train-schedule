@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  Index,
+} from 'typeorm';
 import { RoutePoint } from './route-point.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -15,10 +21,12 @@ export class Train {
   id: string;
 
   @ApiProperty({ example: '042K' })
+  @Index()
   @Column({ unique: true })
   trainNumber: string;
 
   @ApiProperty({ example: 'Kyiv - Lviv' })
+  @Index()
   @Column()
   name: string;
 
