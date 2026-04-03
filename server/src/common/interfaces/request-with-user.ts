@@ -7,8 +7,3 @@ export interface RequestWithUser extends Request {
     role: string;
   };
 }
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  count: number;
-}

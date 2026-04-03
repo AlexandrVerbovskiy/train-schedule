@@ -10,6 +10,5 @@ import { AuthModule } from '../auth/auth.module';
   imports: [TypeOrmModule.forFeature([Train, RoutePoint]), AuthModule],
   controllers: [TrainsController],
   providers: [TrainsService],
-  exports: [TrainsService],
 })
 export class TrainsModule {}

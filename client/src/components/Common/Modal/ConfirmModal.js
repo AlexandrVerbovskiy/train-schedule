@@ -1,5 +1,4 @@
 import Modal from "./Modal";
-
 import { ActionButton, GhostButton, DangerButton } from "../Button";
 
 const ConfirmModal = ({

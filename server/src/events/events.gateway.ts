@@ -30,9 +30,7 @@ export class EventsGateway
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  emitDataUpdate(
-    type: 'STATIONS_UPDATED' | 'TRAINS_UPDATED' | 'SCHEDULE_UPDATED',
-  ) {
+  emitDataUpdate(type: 'STATIONS_UPDATED' | 'TRAINS_UPDATED') {
     this.server.emit(type, { timestamp: new Date().toISOString() });
   }
 }

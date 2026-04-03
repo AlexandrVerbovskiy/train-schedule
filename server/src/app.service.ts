@@ -1,10 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class AppService implements OnModuleInit {
+export class AppService {
   constructor() {}
-
-  async onModuleInit() {}
 
   getHello(): string {
     return 'Hello World!';

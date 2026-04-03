@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Train } from '../entities/train.entity';
 import { BasePaginationResponseDto } from '../../common/dto/base-pagination-response.dto';
-import { PaginatedResponse } from '../../common/interfaces';
+import { PaginatedResponse } from '../../common/interfaces/paginated-response';
 
 export class TrainsListResponseDto
   extends BasePaginationResponseDto

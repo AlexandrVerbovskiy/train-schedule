@@ -21,6 +21,6 @@ import { TrainsCacheService } from './trains-cache.service';
     }),
   ],
   providers: [StationsCacheService, TrainsCacheService],
-  exports: [CacheModule, StationsCacheService, TrainsCacheService],
+  exports: [StationsCacheService, TrainsCacheService],
 })
 export class AppCacheModule {}
