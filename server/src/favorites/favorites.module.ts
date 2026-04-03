@@ -9,6 +9,5 @@ import { Train } from '../trains/entities/train.entity';
   imports: [TypeOrmModule.forFeature([Favorite, Train])],
   controllers: [FavoritesController],
   providers: [FavoritesService],
-  exports: [FavoritesService],
 })
 export class FavoritesModule {}

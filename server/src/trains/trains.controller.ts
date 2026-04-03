@@ -27,7 +27,7 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import { RequestWithUser } from 'src/common/interfaces';
+import { RequestWithUser } from 'src/common/interfaces/request-with-user';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Trains')

@@ -8,7 +8,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FavoritesService } from './favorites.service';
 import { FavoriteToggleResponseDto } from './dto/favorite-toggle-response.dto';
-import { RequestWithUser } from '../common/interfaces';
+import { RequestWithUser } from '../common/interfaces/request-with-user';
 
 @ApiTags('Favorites')
 @ApiBearerAuth()

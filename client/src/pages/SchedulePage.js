@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import * as scheduleApi from "../api/schedule";
+import * as trainsApi from "../api/trains";
 import CustomTable from "../components/Common/CustomTable";
 import ScheduleRow from "../components/Schedule/ScheduleRow";
 import ScheduleFilters from "../components/Schedule/ScheduleFilters";
@@ -22,7 +22,7 @@ const SchedulePage = () => {
     setLoading(true);
     try {
       const [hour, minute] = targetTime ? targetTime.split(":") : ["", ""];
-      const { data, count } = await scheduleApi.getSchedule(page, {
+      const { data, count } = await trainsApi.getSchedule(page, {
         limit: ITEMS_PER_PAGE,
         search,
         type: targetType,

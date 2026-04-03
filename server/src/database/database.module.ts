@@ -7,6 +7,5 @@ import { UserSeeder } from './seeders/user.seeder';
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   providers: [SeedService, UserSeeder],
-  exports: [SeedService],
 })
 export class DatabaseModule {}
