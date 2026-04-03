@@ -13,8 +13,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { StationsCacheService } from '../cache/stations-cache.service';
 import { TrainsCacheService } from '../cache/trains-cache.service';
 import { EventsGateway } from '../events/events.gateway';
-import { test } from '../common/test';
-
+import {test} from '../common/test2';
 
 @Injectable()
 export class StationsService {
