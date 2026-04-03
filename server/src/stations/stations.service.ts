@@ -13,6 +13,7 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { StationsCacheService } from '../cache/stations-cache.service';
 import { TrainsCacheService } from '../cache/trains-cache.service';
 import { EventsGateway } from '../events/events.gateway';
+import { test } from '../common/test';
 
 @Injectable()
 export class StationsService {
@@ -50,8 +51,6 @@ export class StationsService {
     await this.clearRelatedCache();
     return saved;
   }
-
-  test
 
   async findAll(): Promise<Station[]> {
     const cacheKey = 'all';
