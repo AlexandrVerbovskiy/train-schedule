@@ -4,16 +4,18 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeepPartial } from 'typeorm';
+import { Repository, DeepPartial, Brackets } from 'typeorm';
 import { Train } from './entities/train.entity';
 import { CreateTrainDto } from './dto/create-train.dto';
 import { UpdateTrainDto } from './dto/update-train.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
-import { RoutePoint } from '../route-points/entities/route-point.entity';
+import { RoutePoint } from './entities/route-point.entity';
 import { TrainsCacheService } from '../cache/trains-cache.service';
-import { ScheduleCacheService } from '../cache/schedule-cache.service';
 import { PaginatedResponse } from '../common/interfaces';
 import { EventsGateway } from '../events/events.gateway';
+import { SearchTrainPaginationDto } from './dto/search-train-pagination.dto';
+
+import { Favorite } from '../favorites/entities/favorite.entity';
 
 @Injectable()
 export class TrainsService {
@@ -22,16 +24,12 @@ export class TrainsService {
     private trainRepository: Repository<Train>,
     @InjectRepository(RoutePoint)
     private routePointRepository: Repository<RoutePoint>,
-    private readonly scheduleCacheService: ScheduleCacheService,
     private readonly trainsCacheService: TrainsCacheService,
     private readonly eventsGateway: EventsGateway,
   ) {}
 
   async clearRelatedCache(): Promise<void> {
-    await Promise.all([
-      this.scheduleCacheService.clearAll(),
-      this.trainsCacheService.clearAll(),
-    ]);
+    await Promise.all([this.trainsCacheService.clearAll()]);
     this.eventsGateway.emitDataUpdate('TRAINS_UPDATED');
   }
 
@@ -141,5 +139,133 @@ export class TrainsService {
       throw new NotFoundException(`Train with ID "${id}" not found`);
     }
     await this.clearRelatedCache();
+  }
+
+  async schedule(
+    searchDto: SearchTrainPaginationDto,
+    userId: number,
+  ): Promise<PaginatedResponse<Train>> {
+    const cached = await this.trainsCacheService.getUserScheduleList(
+      searchDto,
+      userId,
+    );
+
+    if (cached) {
+      return cached;
+    }
+
+    const { page, limit, search, type, hour, minute, showOnlyFavorites } =
+      searchDto;
+
+    const query = this.trainRepository
+      .createQueryBuilder('train')
+      .leftJoinAndSelect('train.routeItems', 'routeItems')
+      .leftJoinAndSelect('routeItems.station', 'station')
+      .leftJoin(
+        'favorites',
+        'fav',
+        'fav.trainId = train.id AND fav.userId = :userId',
+      )
+      .addSelect('fav.id', 'fav_id')
+      .orderBy('train.trainNumber', 'ASC')
+      .andWhere((subQuery) => {
+        const countSub = subQuery
+          .subQuery()
+          .select('COUNT(rp_count.id)')
+          .from(RoutePoint, 'rp_count')
+          .where('rp_count.train = train.id');
+        return `${countSub.getQuery()} >= 2`;
+      });
+
+    if (search) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('train.name ILIKE :search')
+            .orWhere('train.trainNumber ILIKE :search')
+            .orWhere('CAST(train.type AS text) ILIKE :search')
+            .orWhere((subQuery) => {
+              const stationNameSub = subQuery
+                .subQuery()
+                .select('1')
+                .from(RoutePoint, 'rp_sub_name')
+                .leftJoin('rp_sub_name.station', 'st_sub_name')
+                .where('rp_sub_name.train = train.id')
+                .andWhere('st_sub_name.name ILIKE :search');
+
+              return `EXISTS (${stationNameSub.getQuery()})`;
+            });
+        }),
+      );
+    }
+
+    if (type) {
+      query.andWhere('train.type = :type', { type });
+    }
+
+    if (showOnlyFavorites && userId) {
+      query.andWhere('fav.id IS NOT NULL');
+    }
+
+    if (hour !== undefined && hour !== null) {
+      query.andWhere((subQuery) => {
+        const timeSub = subQuery
+          .subQuery()
+          .select('1')
+          .from(RoutePoint, 'rp_sub_time')
+          .where('rp_sub_time.train = train.id')
+          .andWhere(
+            new Brackets((qb) => {
+              qb.where(
+                new Brackets((qb) => {
+                  qb.where('rp_sub_time.departureHour = :hour');
+                  if (minute !== undefined && minute !== null) {
+                    qb.andWhere('rp_sub_time.departureMinute = :minute');
+                  }
+                }),
+              ).orWhere(
+                new Brackets((qb) => {
+                  qb.where('rp_sub_time.arrivalHour = :hour');
+                  if (minute !== undefined && minute !== null) {
+                    qb.andWhere('rp_sub_time.arrivalMinute = :minute');
+                  }
+                }),
+              );
+            }),
+          );
+
+        return `EXISTS (${timeSub.getQuery()})`;
+      });
+    }
+
+    query.setParameters({
+      search: `%${search}%`,
+      type,
+      hour,
+      minute,
+      userId: userId || 0,
+    });
+
+    const count = await query.getCount();
+    const { entities: trains, raw } = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getRawAndEntities();
+
+    trains.forEach((train) => {
+      if (train.routeItems) {
+        train.routeItems.sort((a, b) => (a.order || 0) - (b.order || 0));
+      }
+
+      const hasFavorite = raw.some((r) => r.train_id === train.id && r.fav_id);
+      train.isFavorite = hasFavorite;
+    });
+
+    const result = { data: trains, count, raw };
+    await this.trainsCacheService.setUserScheduleList(
+      searchDto,
+      userId,
+      result,
+    );
+    return result;
   }
 }

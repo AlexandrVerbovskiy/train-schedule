@@ -46,7 +46,6 @@ const ScheduleFilters = ({
         value={targetType}
         onChange={onTypeChange}
         options={[{ label: "All Types", value: "" }, ...TRAIN_TYPE_OPTIONS]}
-        isClearable={true}
       />
     </div>
 

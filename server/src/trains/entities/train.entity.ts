@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { RoutePoint } from '../../route-points/entities/route-point.entity';
+import { RoutePoint } from './route-point.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Favorite } from 'src/favorites/entities/favorite.entity';
 
 export enum TrainType {
   PASSENGER = 'passenger',
@@ -33,7 +34,13 @@ export class Train {
   @ApiProperty({ type: () => [RoutePoint] })
   @OneToMany(() => RoutePoint, (routeItem) => routeItem.train, {
     cascade: true,
-    eager: true,
   })
   routeItems: RoutePoint[];
+
+  @ApiProperty({
+    description: 'Whether the current user has favorited this train',
+    required: false,
+    example: true,
+  })
+  isFavorite?: boolean;
 }

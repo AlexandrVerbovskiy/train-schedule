@@ -8,6 +8,7 @@ import {
   Put,
   UseGuards,
   Query,
+  Req,
 } from '@nestjs/common';
 import { TrainsService } from './trains.service';
 import { CreateTrainDto } from './dto/create-train.dto';
@@ -18,6 +19,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import { SearchTrainPaginationDto } from './dto/search-train-pagination.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { RequestWithUser } from 'src/common/interfaces';
 
 @ApiTags('Trains')
 @ApiBearerAuth()
@@ -54,5 +56,15 @@ export class TrainsController {
   @ApiOperation({ summary: 'Delete train' })
   remove(@Param('id') id: string) {
     return this.trainsService.remove(id);
+  }
+
+  @Get('schedule')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Get schedule (all route points with filters)' })
+  schedule(
+    @Query() searchDto: SearchTrainPaginationDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.trainsService.schedule(searchDto, req.user.id);
   }
 }

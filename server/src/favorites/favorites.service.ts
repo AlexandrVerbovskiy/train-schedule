@@ -2,44 +2,42 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Favorite } from './entities/favorite.entity';
-import { RoutePoint } from '../route-points/entities/route-point.entity';
-import { ScheduleCacheService } from '../cache/schedule-cache.service';
+import { Train } from '../trains/entities/train.entity';
+import { TrainsCacheService } from 'src/cache/trains-cache.service';
 
 @Injectable()
 export class FavoritesService {
   constructor(
     @InjectRepository(Favorite)
     private favoritesRepository: Repository<Favorite>,
-    @InjectRepository(RoutePoint)
-    private routePointsRepository: Repository<RoutePoint>,
-    private readonly scheduleCacheService: ScheduleCacheService,
+    @InjectRepository(Train)
+    private trainsRepository: Repository<Train>,
+    private readonly trainsCacheService: TrainsCacheService,
   ) {}
 
   async toggle(
     userId: number,
-    routePointId: string,
+    trainId: string,
   ): Promise<{ isFavorite: boolean }> {
-    const isRoutePointExists = await this.routePointsRepository.findOne({
-      where: { id: routePointId },
+    const isTrainExists = await this.trainsRepository.findOne({
+      where: { id: trainId },
     });
-    if (!isRoutePointExists) {
-      throw new NotFoundException(
-        `Route point with ID "${routePointId}" not found`,
-      );
+    if (!isTrainExists) {
+      throw new NotFoundException(`Train with ID "${trainId}" not found`);
     }
 
     const existing = await this.favoritesRepository.findOne({
-      where: { userId, routePointId },
+      where: { userId, trainId },
     });
 
     if (existing) {
       await this.favoritesRepository.remove(existing);
     } else {
-      const fav = this.favoritesRepository.create({ userId, routePointId });
+      const fav = this.favoritesRepository.create({ userId, trainId });
       await this.favoritesRepository.save(fav);
     }
 
-    await this.scheduleCacheService.clearUserScheduleList(userId);
+    await this.trainsCacheService.clearUserScheduleList(userId);
     return { isFavorite: !existing };
   }
 }

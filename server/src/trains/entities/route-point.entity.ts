@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Train } from '../../trains/entities/train.entity';
+import { Train } from './train.entity';
 import { Station } from '../../stations/entities/station.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -22,7 +22,6 @@ export class RoutePoint {
   @ApiProperty({ type: () => Station })
   @ManyToOne(() => Station, (station) => station.routeItems, {
     onDelete: 'CASCADE',
-    eager: true,
   })
   @JoinColumn({ name: 'station_id' })
   station: Station;
@@ -46,11 +45,4 @@ export class RoutePoint {
   @ApiProperty({ example: 1, description: 'Order of the stop in the route' })
   @Column({ name: 'order', type: 'int', default: 1 })
   order: number;
-
-  @ApiProperty({
-    description: 'Whether the current user has favorited this route point',
-    required: false,
-    example: true,
-  })
-  isFavorite?: boolean;
 }

@@ -7,11 +7,11 @@ import {
   Column,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { RoutePoint } from '../../route-points/entities/route-point.entity';
+import { Train } from '../../trains/entities/train.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('favorites')
-@Unique(['userId', 'routePointId'])
+@Unique(['userId', 'trainId'])
 export class Favorite {
   @ApiProperty()
   @PrimaryGeneratedColumn()
@@ -21,13 +21,13 @@ export class Favorite {
   userId: number;
 
   @Column()
-  routePointId: string;
+  trainId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @ManyToOne(() => RoutePoint, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'routePointId' })
-  routePoint: RoutePoint;
+  @ManyToOne(() => Train, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'trainId' })
+  train: Train;
 }

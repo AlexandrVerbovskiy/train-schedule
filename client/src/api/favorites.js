@@ -1,4 +1,4 @@
 import apiClient from "../utils/client";
 
-export const toggleFavorite = (routePointId) =>
-  apiClient(`/favorites/${routePointId}/toggle`, { method: "POST" });
+export const toggleFavorite = (trainId) =>
+  apiClient(`/favorites/${trainId}/toggle`, { method: "POST" });

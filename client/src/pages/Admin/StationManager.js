@@ -140,7 +140,7 @@ const StationManager = () => {
         onConfirm={confirmDelete}
         title="Delete Station?"
         message="Are you sure you want to delete this station?"
-        confirmText="Remove Station"
+        confirmText="Delete"
       />
     </>
   );

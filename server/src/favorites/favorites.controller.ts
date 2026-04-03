@@ -11,12 +11,9 @@ import { RequestWithUser } from '../common/interfaces';
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
-  @Post(':routePointId/toggle')
-  @ApiOperation({ summary: 'Add or remove route point from favorites' })
-  toggle(
-    @Req() req: RequestWithUser,
-    @Param('routePointId') routePointId: string,
-  ) {
-    return this.favoritesService.toggle(req.user.id, routePointId);
+  @Post(':trainId/toggle')
+  @ApiOperation({ summary: 'Add or remove train from favorites' })
+  toggle(@Req() req: RequestWithUser, @Param('trainId') trainId: string) {
+    return this.favoritesService.toggle(req.user.id, trainId);
   }
 }

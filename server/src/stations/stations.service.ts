@@ -10,7 +10,6 @@ import { CreateStationDto } from './dto/create-station.dto';
 import { UpdateStationDto } from './dto/update-station.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { StationsCacheService } from '../cache/stations-cache.service';
-import { ScheduleCacheService } from '../cache/schedule-cache.service';
 import { TrainsCacheService } from '../cache/trains-cache.service';
 import { PaginatedResponse } from '../common/interfaces';
 import { EventsGateway } from '../events/events.gateway';
@@ -20,7 +19,6 @@ export class StationsService {
   constructor(
     @InjectRepository(Station)
     private readonly stationRepository: Repository<Station>,
-    private readonly scheduleCacheService: ScheduleCacheService,
     private readonly cacheService: StationsCacheService,
     private readonly trainsCacheService: TrainsCacheService,
     private readonly eventsGateway: EventsGateway,
@@ -28,7 +26,6 @@ export class StationsService {
 
   async clearRelatedCache(): Promise<void> {
     await Promise.all([
-      this.scheduleCacheService.clearAll(),
       this.trainsCacheService.clearAll(),
       this.cacheService.clearAll(),
     ]);

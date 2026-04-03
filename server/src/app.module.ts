@@ -8,10 +8,9 @@ import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { TrainsModule } from './trains/trains.module';
 import { StationsModule } from './stations/stations.module';
-import { RoutePointsModule } from './route-points/route-points.module';
 import { Train } from './trains/entities/train.entity';
 import { Station } from './stations/entities/station.entity';
-import { RoutePoint } from './route-points/entities/route-point.entity';
+import { RoutePoint } from './trains/entities/route-point.entity';
 
 import { FavoritesModule } from './favorites/favorites.module';
 import { Favorite } from './favorites/entities/favorite.entity';
@@ -40,7 +39,6 @@ import { AppCacheModule } from './cache/cache.module';
     DatabaseModule,
     TrainsModule,
     StationsModule,
-    RoutePointsModule,
     FavoritesModule,
   ],
   controllers: [AppController],

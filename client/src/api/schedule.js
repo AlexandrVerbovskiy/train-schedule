@@ -4,7 +4,7 @@ export const getSchedule = (
   page = 1,
   { limit = 10, search = "", type = "", hour = "", minute = "", showOnlyFavorites = false } = {},
 ) => {
-  let link = `/route-points?page=${page}&limit=${limit}`;
+  let link = `/trains/schedule?page=${page}&limit=${limit}`;
 
   if (search) {
     link += `&search=${search}`;

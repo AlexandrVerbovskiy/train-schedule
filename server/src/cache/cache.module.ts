@@ -1,8 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ScheduleCacheService } from './schedule-cache.service';
 import { StationsCacheService } from './stations-cache.service';
 import { TrainsCacheService } from './trains-cache.service';
 
@@ -11,23 +9,20 @@ import { TrainsCacheService } from './trains-cache.service';
   imports: [
     CacheModule.registerAsync({
       isGlobal: true,
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async () => ({
         store: await redisStore({
           socket: {
-            host: configService.get<string>('REDIS_HOST', 'localhost'),
-            port: configService.get<number>('REDIS_PORT', 6379),
+            host: process.env.REDIS_HOST!,
+            port: Number(process.env.REDIS_PORT!),
           },
           ttl: 60 * 1000,
         }),
       }),
     }),
   ],
-  providers: [ScheduleCacheService, StationsCacheService, TrainsCacheService],
+  providers: [StationsCacheService, TrainsCacheService],
   exports: [
     CacheModule,
-    ScheduleCacheService,
     StationsCacheService,
     TrainsCacheService,
   ],

@@ -9,7 +9,7 @@ import socketService from "../services/socketService";
 const ITEMS_PER_PAGE = 10;
 
 const SchedulePage = () => {
-  const [routePoints, setRoutePoints] = useState([]);
+  const [trains, setTrains] = useState([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -30,7 +30,7 @@ const SchedulePage = () => {
         minute,
         showOnlyFavorites,
       });
-      setRoutePoints(data || []);
+      setTrains(data || []);
       setTotal(count || 0);
     } catch (err) {
       console.error("Failed to load schedule");
@@ -61,13 +61,13 @@ const SchedulePage = () => {
     };
   }, [fetchSchedule]);
 
-  const handleToggleFavorite = async (routePointId) => {
-    if (!routePointId) return;
+  const handleToggleFavorite = async (trainId) => {
+    if (!trainId) return;
     try {
-      const { isFavorite } = await favoritesApi.toggleFavorite(routePointId);
+      const { isFavorite } = await favoritesApi.toggleFavorite(trainId);
 
-      setRoutePoints((prev) =>
-        prev.map((t) => (t.id === routePointId ? { ...t, isFavorite } : t)),
+      setTrains((prev) =>
+        prev.map((train) => (train.id === trainId ? { ...train, isFavorite } : train)),
       );
     } catch (err) {
       console.error("Failed to toggle favorite", err);
@@ -92,17 +92,17 @@ const SchedulePage = () => {
             onFavoritesToggle={setShowOnlyFavorites}
           />
         }
-        headers={["Num", "Type", "Station", "Arrival", "Departure", "Service"]}
-        items={routePoints}
-        emptyText={showOnlyFavorites ? "No favorites yet" : "No route points found"}
+        headers={["Train", "Type", "Name", "Route & Schedule"]}
+        items={trains}
+        emptyText={showOnlyFavorites ? "No favorites yet" : "No trains found"}
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}
         loading={loading}
-        renderRow={(routePoint) => (
+        renderRow={(train) => (
           <ScheduleRow
-            key={routePoint.id}
-            routePoint={routePoint}
+            key={train.id}
+            train={train}
             onToggleFavorite={handleToggleFavorite}
           />
         )}
