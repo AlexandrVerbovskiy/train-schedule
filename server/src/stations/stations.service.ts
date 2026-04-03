@@ -51,6 +51,8 @@ export class StationsService {
     return saved;
   }
 
+  test
+
   async findAll(): Promise<Station[]> {
     const cacheKey = 'all';
     const cached = await this.cacheService.get<Station[]>(cacheKey);
