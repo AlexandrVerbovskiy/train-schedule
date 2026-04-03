@@ -6,8 +6,11 @@ class SocketService {
   socket = null;
 
   connect() {
+    console.log('Connecting to WebSocket:', SOCKET_URL);
     if (!this.socket) {
-      this.socket = io(SOCKET_URL);
+      this.socket = io(SOCKET_URL, {
+        transports: ['websocket'],
+      });
     }
     return this.socket;
   }

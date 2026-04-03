@@ -1,8 +1,6 @@
 const BASE_URL = process.env.REACT_APP_API_URL;
 
 const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
-  console.log("server_url: ", BASE_URL);
-
   const token = localStorage.getItem('token');
 
   const headers = {
