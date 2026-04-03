@@ -8,10 +8,10 @@ import { Repository } from 'typeorm';
 import { Station } from './entities/station.entity';
 import { CreateStationDto } from './dto/create-station.dto';
 import { UpdateStationDto } from './dto/update-station.dto';
+import { StationsListResponseDto } from './dto/stations-list-response.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { StationsCacheService } from '../cache/stations-cache.service';
 import { TrainsCacheService } from '../cache/trains-cache.service';
-import { PaginatedResponse } from '../common/interfaces';
 import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
@@ -67,12 +67,10 @@ export class StationsService {
     return items;
   }
 
-  async find(
-    paginationDto: PaginationDto,
-  ): Promise<PaginatedResponse<Station>> {
+  async find(paginationDto: PaginationDto): Promise<StationsListResponseDto> {
     const cacheKey = JSON.stringify(paginationDto);
     const cached =
-      await this.cacheService.get<PaginatedResponse<Station>>(cacheKey);
+      await this.cacheService.get<StationsListResponseDto>(cacheKey);
 
     if (cached) {
       return cached;

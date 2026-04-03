@@ -12,7 +12,6 @@ export class Station {
   @Column({ unique: true })
   name: string;
 
-  @ApiProperty({ type: () => [RoutePoint] })
   @OneToMany(() => RoutePoint, (routeItem) => routeItem.station)
   routeItems: RoutePoint[];
 }

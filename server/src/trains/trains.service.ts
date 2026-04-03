@@ -4,18 +4,18 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeepPartial, Brackets } from 'typeorm';
+import { Repository, DeepPartial, Brackets, SelectQueryBuilder } from 'typeorm';
 import { Train } from './entities/train.entity';
 import { CreateTrainDto } from './dto/create-train.dto';
 import { UpdateTrainDto } from './dto/update-train.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { RoutePoint } from './entities/route-point.entity';
 import { TrainsCacheService } from '../cache/trains-cache.service';
-import { PaginatedResponse } from '../common/interfaces';
 import { EventsGateway } from '../events/events.gateway';
-import { SearchTrainPaginationDto } from './dto/search-train-pagination.dto';
-
-import { Favorite } from '../favorites/entities/favorite.entity';
+import { SearchSchedulePaginationDto } from './dto/search-schedule-pagination.dto';
+import { TrainsListResponseDto } from './dto/trains-list-response.dto';
+import { CreatedTrainResponseDto } from './dto/created-train-response.dto';
+import { ScheduleListResponseDto } from './dto/schedule-list-response.dto';
 
 @Injectable()
 export class TrainsService {
@@ -33,7 +33,9 @@ export class TrainsService {
     this.eventsGateway.emitDataUpdate('TRAINS_UPDATED');
   }
 
-  async create(createTrainDto: CreateTrainDto): Promise<Train> {
+  async create(
+    createTrainDto: CreateTrainDto,
+  ): Promise<CreatedTrainResponseDto> {
     const { routeItems, ...trainData } = createTrainDto;
 
     await this.checkTrainNumberUniqueness(trainData.trainNumber);
@@ -52,10 +54,10 @@ export class TrainsService {
     return saved;
   }
 
-  async find(paginationDto: PaginationDto): Promise<PaginatedResponse<Train>> {
+  async find(paginationDto: PaginationDto): Promise<TrainsListResponseDto> {
     const cacheKey = JSON.stringify(paginationDto);
     const cached =
-      await this.trainsCacheService.get<PaginatedResponse<Train>>(cacheKey);
+      await this.trainsCacheService.get<TrainsListResponseDto>(cacheKey);
 
     if (cached) {
       return cached;
@@ -65,8 +67,6 @@ export class TrainsService {
 
     const query = this.trainRepository
       .createQueryBuilder('train')
-      .leftJoinAndSelect('train.routeItems', 'routeItems')
-      .leftJoinAndSelect('routeItems.station', 'station')
       .skip((page - 1) * limit)
       .take(limit)
       .orderBy('train.trainNumber', 'ASC');
@@ -84,7 +84,10 @@ export class TrainsService {
     return result;
   }
 
-  async update(id: string, updateTrainDto: UpdateTrainDto): Promise<Train> {
+  async update(
+    id: string,
+    updateTrainDto: UpdateTrainDto,
+  ): Promise<CreatedTrainResponseDto> {
     const train = await this.trainRepository.findOne({
       where: { id },
       relations: ['routeItems', 'routeItems.station'],
@@ -142,9 +145,9 @@ export class TrainsService {
   }
 
   async schedule(
-    searchDto: SearchTrainPaginationDto,
+    searchDto: SearchSchedulePaginationDto,
     userId: number,
-  ): Promise<PaginatedResponse<Train>> {
+  ): Promise<ScheduleListResponseDto> {
     const cached = await this.trainsCacheService.getUserScheduleList(
       searchDto,
       userId,
@@ -168,7 +171,7 @@ export class TrainsService {
       )
       .addSelect('fav.id', 'fav_id')
       .orderBy('train.trainNumber', 'ASC')
-      .andWhere((subQuery) => {
+      .andWhere((subQuery: SelectQueryBuilder<Train>) => {
         const countSub = subQuery
           .subQuery()
           .select('COUNT(rp_count.id)')
@@ -183,7 +186,7 @@ export class TrainsService {
           qb.where('train.name ILIKE :search')
             .orWhere('train.trainNumber ILIKE :search')
             .orWhere('CAST(train.type AS text) ILIKE :search')
-            .orWhere((subQuery) => {
+            .orWhere((subQuery: SelectQueryBuilder<Train>) => {
               const stationNameSub = subQuery
                 .subQuery()
                 .select('1')
@@ -207,7 +210,7 @@ export class TrainsService {
     }
 
     if (hour !== undefined && hour !== null) {
-      query.andWhere((subQuery) => {
+      query.andWhere((subQuery: SelectQueryBuilder<Train>) => {
         const timeSub = subQuery
           .subQuery()
           .select('1')
@@ -246,21 +249,26 @@ export class TrainsService {
     });
 
     const count = await query.getCount();
-    const { entities: trains, raw } = await query
+    const { entities: trains, raw } = (await query
       .skip((page - 1) * limit)
       .take(limit)
-      .getRawAndEntities();
+      .getRawAndEntities()) as {
+      entities: Train[];
+      raw: { train_id: string; fav_id: string | null }[];
+    };
 
     trains.forEach((train) => {
       if (train.routeItems) {
         train.routeItems.sort((a, b) => (a.order || 0) - (b.order || 0));
       }
 
-      const hasFavorite = raw.some((r) => r.train_id === train.id && r.fav_id);
+      const hasFavorite = raw.some(
+        (r) => r.train_id === train.id && r.fav_id !== null,
+      );
       train.isFavorite = hasFavorite;
     });
 
-    const result = { data: trains, count, raw };
+    const result = { data: trains, count };
     await this.trainsCacheService.setUserScheduleList(
       searchDto,
       userId,

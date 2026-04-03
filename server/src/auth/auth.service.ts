@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { User, UserRole } from '../users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -19,7 +20,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
     const { email, password } = registerDto;
 
     const existingUser = await this.userRepository.findOne({
@@ -41,7 +42,7 @@ export class AuthService {
     return this.login({ email, password });
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const { email, password } = loginDto;
 
     const user = await this.userRepository.findOne({

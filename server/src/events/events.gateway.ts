@@ -9,7 +9,8 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.NODE_ENV === 'dev' ? '*' : process.env.CORS_URLS?.split(','),
+    origin:
+      process.env.NODE_ENV === 'dev' ? '*' : process.env.CORS_URLS?.split(','),
   },
 })
 export class EventsGateway
@@ -29,7 +30,9 @@ export class EventsGateway
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  emitDataUpdate(type: 'STATIONS_UPDATED' | 'TRAINS_UPDATED' | 'SCHEDULE_UPDATED') {
+  emitDataUpdate(
+    type: 'STATIONS_UPDATED' | 'TRAINS_UPDATED' | 'SCHEDULE_UPDATED',
+  ) {
     this.server.emit(type, { timestamp: new Date().toISOString() });
   }
 }

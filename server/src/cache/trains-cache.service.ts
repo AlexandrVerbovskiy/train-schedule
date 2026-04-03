@@ -2,9 +2,8 @@ import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { BaseCacheService } from './base-cache.service';
-import { SearchTrainPaginationDto } from 'src/trains/dto/search-train-pagination.dto';
-import { PaginatedResponse } from 'src/common/interfaces';
-import { Train } from 'src/trains/entities/train.entity';
+import { SearchSchedulePaginationDto } from 'src/trains/dto/search-schedule-pagination.dto';
+import { ScheduleListResponseDto } from 'src/trains/dto/schedule-list-response.dto';
 
 @Injectable()
 export class TrainsCacheService extends BaseCacheService {
@@ -17,23 +16,23 @@ export class TrainsCacheService extends BaseCacheService {
   }
 
   private generateUserScheduleListKey(
-    searchDto: SearchTrainPaginationDto,
+    searchDto: SearchSchedulePaginationDto,
     userId: number,
   ): string {
     return `${this.generateBaseKey(userId)}:${JSON.stringify(searchDto)}`;
   }
 
   async getUserScheduleList(
-    searchDto: SearchTrainPaginationDto,
+    searchDto: SearchSchedulePaginationDto,
     userId: number,
-  ): Promise<PaginatedResponse<Train> | undefined> {
+  ): Promise<ScheduleListResponseDto | undefined> {
     return this.get(this.generateUserScheduleListKey(searchDto, userId));
   }
 
   async setUserScheduleList(
-    searchDto: SearchTrainPaginationDto,
+    searchDto: SearchSchedulePaginationDto,
     userId: number,
-    value: any,
+    value: ScheduleListResponseDto,
   ): Promise<void> {
     await this.set(
       this.generateUserScheduleListKey(searchDto, userId),

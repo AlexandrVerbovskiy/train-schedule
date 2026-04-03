@@ -20,11 +20,12 @@ import { TrainType } from '../entities/train.entity';
 
 @ValidatorConstraint({ name: 'isUniqueStations', async: false })
 class IsUniqueStationsConstraint implements ValidatorConstraintInterface {
-  validate(routeItems: any[]) {
-    if (!Array.isArray(routeItems)) return true;
-    const stationIds = routeItems.map(
-      (item: NestedRoutePointDto) => item.stationId,
-    );
+  validate(routeItems: NestedRoutePointDto[]) {
+    if (!Array.isArray(routeItems)) {
+      return true;
+    }
+
+    const stationIds = routeItems.map((item) => item.stationId);
     return new Set(stationIds).size === stationIds.length;
   }
 

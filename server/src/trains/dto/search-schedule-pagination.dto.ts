@@ -11,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { TrainType } from '../entities/train.entity';
 
-export class SearchTrainPaginationDto extends PaginationDto {
+export class SearchSchedulePaginationDto extends PaginationDto {
   @ApiProperty({
     description: 'Filter by train type',
     enum: TrainType,

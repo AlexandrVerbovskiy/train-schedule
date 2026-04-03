@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { RoutePoint } from './route-point.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Favorite } from 'src/favorites/entities/favorite.entity';
 
 export enum TrainType {
   PASSENGER = 'passenger',
