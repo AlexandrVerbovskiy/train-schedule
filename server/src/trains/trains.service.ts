@@ -67,9 +67,11 @@ export class TrainsService {
 
     const query = this.trainRepository
       .createQueryBuilder('train')
+      .leftJoinAndSelect('train.routeItems', 'routeItems')
       .skip((page - 1) * limit)
       .take(limit)
-      .orderBy('train.trainNumber', 'ASC');
+      .orderBy('train.trainNumber', 'ASC')
+      .addOrderBy('routeItems.order', 'ASC');
 
     if (search) {
       query.andWhere(
